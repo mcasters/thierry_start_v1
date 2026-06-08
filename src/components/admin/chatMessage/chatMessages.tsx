@@ -1,48 +1,42 @@
-"use client";
-
-import React, { useRef, useState } from "react";
-import style from "@/components/admin/admin.module.css";
+import { useRef, useState } from "react";
+import style from "~/components/admin/admin.module.css";
 import s from "./chatMessage.module.css";
+import { Message } from "~/lib/type";
+import ChatMessage from "~/components/admin/chatMessage/chatMessage";
+import { getEmptyMessage } from "~/utils/commonUtils";
+import useMenuManagement from "~/components/hooks/useMenuManagement";
+import { addMessageFn, updateMessageFn } from "~/server-functions/message";
 import {
-  addMessage,
-  deleteMessage,
-  updateMessage,
-} from "@/app/actions/messages";
-import { useSession } from "@/app/context/sessionProvider";
-import { useTheme } from "@/app/context/themeProvider";
-import { Message } from "@/lib/type";
-import ChatMessage from "@/components/admin/chatMessage/chatMessage";
-import { getEmptyMessage } from "@/lib/utils/commonUtils.ts";
-import useMenuManagement from "@/components/hooks/useMenuManagement.ts";
+  rootRouteId,
+  useRouteContext,
+  useRouter,
+} from "@tanstack/react-router";
 
 type Props = {
   dbMessages: Message[];
 };
 
 export default function ChatMessages({ dbMessages }: Props) {
-  const session = useSession();
-  const theme = useTheme();
+  const { session, structTheme } = useRouteContext({ from: rootRouteId });
+  const router = useRouter();
   const textAreaRef = useRef<HTMLTextAreaElement>(null!);
-  const [editMessage, setEditMessage] = useState<Message>(getEmptyMessage());
+  const [message, setMessage] = useState<Message>(getEmptyMessage());
   const { indexOpen, toggle } = useMenuManagement();
 
   const onUpdate = (msg: Message) => {
-    setEditMessage(msg);
+    setMessage(msg);
     toggle(-1);
     textAreaRef.current.focus();
   };
 
-  const onDelete = async (msg: Message) => {
-    await deleteMessage(msg.id);
-    setEditMessage(getEmptyMessage());
-    toggle(-1);
-  };
-
-  const addUpdateAction = async (formData: FormData) => {
-    if (editMessage.text !== "") {
-      const action = editMessage?.id !== 0 ? updateMessage : addMessage;
-      await action(formData);
-      setEditMessage(getEmptyMessage());
+  const handleSubmit = async (formData: FormData) => {
+    const res =
+      message?.id !== 0
+        ? await updateMessageFn({ data: formData })
+        : await addMessageFn({ data: formData });
+    if (!res.isError) {
+      setMessage(getEmptyMessage());
+      router.invalidate();
     }
   };
 
@@ -54,19 +48,18 @@ export default function ChatMessages({ dbMessages }: Props) {
       <div className={`${s.messages} list`}>
         {dbMessages &&
           dbMessages.map((msg, index) => {
-            const isOwner = msg.author.email === session?.user.email;
+            const isOwner = msg.author?.email === session?.email;
 
             return (
               <ChatMessage
                 key={index}
                 message={msg}
-                editMessage={
+                editableMessage={
                   isOwner
                     ? {
                         onUpdate: () => onUpdate(msg),
-                        onDelete: () => onDelete(msg),
-                        onOpenMenu: () => toggle(index),
-                        onCloseMenu: () => toggle(-1),
+                        openMenu: (arg0: boolean) =>
+                          arg0 ? toggle(index) : toggle(-1),
                         isOpen: index === indexOpen,
                       }
                     : undefined
@@ -76,32 +69,30 @@ export default function ChatMessages({ dbMessages }: Props) {
           })}
       </div>
       <br />
-      <form action={addUpdateAction}>
-        <input type="hidden" name="userEmail" value={session?.user.email} />
-        <input type="hidden" name="id" value={editMessage.id} />
+      <form action={handleSubmit}>
+        <input type="hidden" name="userId" value={session?.userId} />
+        <input type="hidden" name="id" value={message.id} />
         <textarea
           ref={textAreaRef}
           name="text"
           placeholder="Ton message"
-          value={editMessage.text}
-          onChange={(e) =>
-            setEditMessage({ ...editMessage, text: e.target.value })
-          }
-          className={s.textArea}
+          value={message.text}
+          onChange={(e) => setMessage({ ...message, text: e.target.value })}
+          className={s.editArea}
           rows={5}
         />
         <br />
         <button
           type="submit"
           className={s.chatButton}
-          style={{ backgroundColor: theme.other.main.text }}
+          style={{ backgroundColor: structTheme.other.main.text }}
         >
-          {editMessage.id !== 0 ? "Mettre à jour" : "Envoyer"}
+          {message.id !== 0 ? "Mettre à jour" : "Envoyer"}
         </button>
         <button
-          onClick={() => setEditMessage(getEmptyMessage())}
+          onClick={() => setMessage(getEmptyMessage())}
           className={s.chatButton}
-          style={{ backgroundColor: theme.other.main.text }}
+          style={{ backgroundColor: structTheme.other.main.text }}
         >
           Annuler
         </button>

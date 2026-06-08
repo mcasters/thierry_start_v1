@@ -1,34 +1,38 @@
-"use client";
-
-import s from "@/components/admin/admin.module.css";
+import s from "~/components/admin/admin.module.css";
 import React from "react";
-import { AdminCategory, AdminWork, Type } from "@/lib/type.ts";
-import AddButton from "@/components/admin/common/button/addButton.tsx";
+import { AdminCategory, Work } from "~/lib/type";
+import AddButton from "~/components/admin/common/button/addButton";
 import {
-  getEmptyCategory,
+  getEmptyAdminCategory,
   getEmptyWork,
   getThumbnailSrc,
-} from "@/lib/utils/commonUtils.ts";
-import SelectableList from "@/components/admin/common/selectableList/selectableList.tsx";
-import SelectableListRow from "@/components/admin/common/selectableList/selectableListRow.tsx";
-import { deleteCategory } from "@/app/actions/item-post/categories/admin.ts";
-import CategoryForm from "@/components/admin/item/form/categoryForm.tsx";
-import FilterWorkListComponent from "@/components/admin/common/selectableList/filterWorkListComponent.tsx";
-import { deleteItem } from "@/app/actions/item-post/admin.ts";
-import WorkForm from "@/components/admin/item/form/workForm.tsx";
+} from "~/utils/commonUtils";
+import SelectableList from "~/components/admin/common/selectableList/selectableList";
+import SelectableRow from "~/components/admin/common/selectableList/selectableRow";
+import CategoryForm from "~/components/admin/item/form/categoryForm";
+import FilterComponent from "~/components/admin/common/selectableList/filterComponent";
+import WorkForm from "~/components/admin/item/form/workForm";
+import { TYPE } from "~/db/schema";
+import {
+  getCreateItemFn,
+  getDeleteCategoryFn,
+  getDeleteItemFn,
+  getUpdateItemFn,
+} from "~/server-functions";
 
 interface Props {
-  works: AdminWork[];
+  works: Work[];
   categories: AdminCategory[];
-  type: Type.PAINTING | Type.SCULPTURE | Type.DRAWING;
+  type: TYPE.PAINTING | TYPE.SCULPTURE | TYPE.DRAWING;
 }
 export default function WorkManagement({ works, categories, type }: Props) {
   return (
     <>
       <SelectableList
+        key="works"
         items={works}
-        renderItem={(work) => (
-          <SelectableListRow
+        renderRow={(work) => (
+          <SelectableRow
             part1={work.title}
             part2={
               categories.find((category) => category.id === work.categoryId)
@@ -37,19 +41,24 @@ export default function WorkManagement({ works, categories, type }: Props) {
             part3={new Date(work.date).getFullYear().toString()}
             part4={work.isOut ? "sortie" : "Non sortie"}
             imageSrc={getThumbnailSrc(work)}
-            deleteAction={() => deleteItem(work.id, work.type)}
+            deleteFn={() => getDeleteItemFn(type)({ data: { id: work.id } })}
           />
         )}
         renderFilter={(getFilteredItems) => (
-          <FilterWorkListComponent
+          <FilterComponent
             works={works}
             categories={categories}
             onFilter={getFilteredItems}
             type={type}
           />
         )}
-        updateForm={(work, handleClose) => (
-          <WorkForm work={work} categories={categories} onClose={handleClose} />
+        renderUpdateForm={(work, handleClose) => (
+          <WorkForm
+            work={work}
+            categories={categories}
+            onClose={handleClose}
+            fn={getUpdateItemFn(type)}
+          />
         )}
       />
       <AddButton
@@ -58,6 +67,7 @@ export default function WorkManagement({ works, categories, type }: Props) {
             work={getEmptyWork(type)}
             categories={categories}
             onClose={toggle}
+            fn={getCreateItemFn(type)}
           />
         )}
         modalWidth={900}
@@ -65,26 +75,30 @@ export default function WorkManagement({ works, categories, type }: Props) {
       <div className="separate" />
       <h2 className={s.title2}>Gestion des catégories</h2>
       <SelectableList
+        key="categories"
         items={categories}
-        renderItem={(category) => (
-          <SelectableListRow
+        renderRow={(category) => (
+          <SelectableRow
             part1={category.value}
             part2={`${category.count} ${category.workType}(s)`}
             imageSrc={getThumbnailSrc(category)}
-            deleteAction={
-              !category.modifiable || category.count > 0
+            deleteFn={
+              category.id === 0 || category.count > 0
                 ? undefined
-                : () => deleteCategory(category.id, type)
+                : () => getDeleteCategoryFn(type)({ data: { id: category.id } })
             }
           />
         )}
-        updateForm={(category, handleClose) => (
-          <CategoryForm category={category} onClose={handleClose} />
+        renderUpdateForm={(category, handleClose) => (
+          <CategoryForm adminCategory={category} onClose={handleClose} />
         )}
       />
       <AddButton
         renderForm={(toggle) => (
-          <CategoryForm category={getEmptyCategory(type)} onClose={toggle} />
+          <CategoryForm
+            adminCategory={getEmptyAdminCategory(type)}
+            onClose={toggle}
+          />
         )}
         modalWidth={700}
       />

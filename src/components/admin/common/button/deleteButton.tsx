@@ -1,12 +1,10 @@
-"use client";
-
-import React from "react";
-import DeleteIcon from "@/components/icons/deleteIcon.tsx";
-import { useAlert } from "@/app/context/alertProvider.tsx";
+import DeleteIcon from "~/components/icons/deleteIcon";
+import { useAlert } from "~/components/admin/context/alertProvider";
+import { useRouter } from "@tanstack/react-router";
 
 export type DeleteButtonProps = {
   onDelete?: () => void;
-  deleteAction?: () => Promise<{
+  deleteFn?: () => Promise<{
     message: string;
     isError: boolean;
   }>;
@@ -14,21 +12,23 @@ export type DeleteButtonProps = {
 };
 export default function DeleteButton({
   onDelete,
-  deleteAction,
+  deleteFn,
   disabled = false,
 }: DeleteButtonProps) {
   const alert = useAlert();
+  const router = useRouter();
 
   return (
     <button
       onClick={
-        deleteAction
+        deleteFn
           ? async (e) => {
               e.stopPropagation();
               e.preventDefault();
               if (confirm("Sûr de vouloir supprimer ?")) {
-                const res = await deleteAction();
+                const res = await deleteFn();
                 alert(res.message, res.isError);
+                router.invalidate();
               }
             }
           : onDelete

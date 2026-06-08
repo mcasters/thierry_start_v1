@@ -1,12 +1,10 @@
-"use client";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ADMIN_MENU } from "@/constants/specific/routes";
-import s from "@/components/layout/admin/adminNav.module.css";
+import { ADMIN_MENU } from "~/constants/specific/routes";
+import s from "~/components/layout/admin/adminNav.module.css";
+import { Link, useLocation } from "@tanstack/react-router";
 
 export default function AdminNav() {
-  const pathname = usePathname();
+  const location = useLocation();
+  const pathname = location.pathname;
 
   return (
     <nav className={s.nav}>
@@ -18,7 +16,7 @@ export default function AdminNav() {
           return (
             <li key={item.TAG}>
               <Link
-                href={item.ROUTE}
+                to={item.ROUTE}
                 key={item.TAG}
                 className={isActive ? `${s.link} ${s.active}` : `${s.link}`}
               >

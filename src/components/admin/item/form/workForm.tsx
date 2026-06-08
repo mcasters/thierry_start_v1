@@ -1,29 +1,35 @@
-"use client";
-
-import React, { useActionState, useState } from "react";
-import s from "@/components/admin/admin.module.css";
-import { Category, Image, Type, Work } from "@/lib/type.ts";
-import SubmitButton from "@/components/admin/common/button/submitButton.tsx";
-import CancelButton from "@/components/admin/common/button/cancelButton.tsx";
-import { createItem, updateItem } from "@/app/actions/item-post/admin.ts";
-import ImageInput from "@/components/admin/common/image/imageInput.tsx";
-import { format } from "date-fns/format";
-import useActionResult from "@/components/hooks/useActionResult.ts";
+import React, { useState } from "react";
+import s from "~/components/admin/admin.module.css";
+import { Category, Work } from "~/lib/type";
+import ImageInput from "~/components/admin/common/image/imageInput";
+import { TYPE } from "~/db/schema";
+import { useAlert } from "~/components/admin/context/alertProvider";
+import { useRouter } from "@tanstack/react-router";
+import FormButtons from "~/components/admin/common/button/FormButtons";
 
 interface Props {
   work: Work;
   onClose: () => void;
   categories?: Category[];
+  fn: ({ data }: { data: FormData }) => Promise<{
+    message: string;
+    isError: boolean;
+  }>;
 }
 
-export default function WorkForm({ work, onClose, categories }: Props) {
-  const isSculpture = work.type === Type.SCULPTURE;
+export default function WorkForm({ work, onClose, categories, fn }: Props) {
+  const alert = useAlert();
+  const router = useRouter();
+  const type = work.type;
+  const isSculpture = type === TYPE.SCULPTURE;
   const [workItem, setWorkItem] = useState<Work>(work);
-  const [state, action] = useActionState(
-    work.id !== 0 ? updateItem : createItem,
-    null,
-  );
-  useActionResult(state, onClose);
+
+  const action = async (formData: FormData) => {
+    const { message, isError } = await fn({ data: formData });
+    alert(message, isError);
+    router.invalidate();
+    if (!isError) onClose();
+  };
 
   return (
     <form action={action}>
@@ -55,7 +61,7 @@ export default function WorkForm({ work, onClose, categories }: Props) {
             <input
               name="date"
               type="date"
-              value={format(new Date(workItem.date), "yyyy-MM-dd")}
+              value={workItem.date.toISOString().substring(0, 10)}
               onChange={(e) =>
                 setWorkItem({ ...workItem, date: new Date(e.target.value) })
               }
@@ -124,14 +130,10 @@ export default function WorkForm({ work, onClose, categories }: Props) {
             Catégorie
             <select
               name="categoryId"
-              value={workItem.categoryId?.toString()}
-              onChange={(e) => {
-                setWorkItem(
-                  Object.assign({}, workItem, {
-                    categoryId: e.target.value,
-                  }),
-                );
-              }}
+              value={workItem.categoryId ?? 0}
+              onChange={(e) =>
+                setWorkItem({ ...workItem, categoryId: Number(e.target.value) })
+              }
             >
               <option value={0}>-- Aucune catégorie --</option>
               {categories &&
@@ -180,11 +182,7 @@ export default function WorkForm({ work, onClose, categories }: Props) {
                 name="price"
                 type="number"
                 placeholder="Prix (facultatif)"
-                value={
-                  !workItem.price || workItem.price === 0
-                    ? ""
-                    : workItem.price.toString()
-                }
+                value={!workItem.price ? "" : workItem.price}
                 onChange={(e) =>
                   setWorkItem({ ...workItem, price: Number(e.target.value) })
                 }
@@ -215,11 +213,7 @@ export default function WorkForm({ work, onClose, categories }: Props) {
                 name="price"
                 type="number"
                 placeholder="Prix (facultatif)"
-                value={
-                  !workItem.price || workItem.price === 0
-                    ? ""
-                    : workItem.price.toString()
-                }
+                value={!workItem.price ? "" : workItem.price}
                 onChange={(e) =>
                   setWorkItem({ ...workItem, price: Number(e.target.value) })
                 }
@@ -257,17 +251,14 @@ export default function WorkForm({ work, onClose, categories }: Props) {
       </div>
       <ImageInput
         filesPath={workItem.images.map(
-          (i: Image) => `/images/${work.type}/sm/${i.filename}`,
+          (image) => `/images/${work.type}/sm/${image.filename}`,
         )}
         isMultiple={isSculpture}
         smallImageOption={true}
         title={isSculpture ? "Images * :" : "Image * :"}
         required
       />
-      <div className={s.buttonSection}>
-        <SubmitButton />
-        <CancelButton onCancel={onClose} />
-      </div>
+      <FormButtons onCancel={onClose} />
     </form>
   );
 }

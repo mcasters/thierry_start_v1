@@ -1,18 +1,24 @@
-"use client";
-
-import Link from "next/link";
-
 import s from "./authentication.module.css";
-import { ROUTES } from "@/constants/specific/routes";
+import { ROUTES } from "~/constants/specific/routes";
+import { logoutFn } from "~/server-functions/auth";
+import { Link, useRouter } from "@tanstack/react-router";
 import React from "react";
-import { logoutAction } from "@/app/actions/auth";
 
 type Props = {
   email: string;
 };
 
 export default function AuthStatus({ email }: Props) {
-  const [, formAction] = React.useActionState(logoutAction, null);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.SubmitEvent) => {
+    e.preventDefault();
+    const res = await logoutFn();
+    if (res.success) {
+      router.navigate({ to: "/" });
+      router.invalidate();
+    }
+  };
 
   return (
     <div className={s.authStatusWrapper}>
@@ -23,15 +29,15 @@ export default function AuthStatus({ email }: Props) {
           <strong>{email}</strong>
         </p>
         <br />
-        <Link href={ROUTES.ADMIN}>Administration du site</Link>
+        <Link to={ROUTES.ADMIN}>Administration du site</Link>
         <br />
-        <form className={s.logoutForm}>
-          <button formAction={formAction} className="buttonLink">
+        <form onSubmit={handleSubmit} className={s.logoutForm}>
+          <button type="submit" className="buttonLink">
             Déconnexion
           </button>
         </form>
         <br />
-        <Link href={ROUTES.HOME}>Home</Link>
+        <Link to={ROUTES.HOME}>Home</Link>
       </div>
     </div>
   );

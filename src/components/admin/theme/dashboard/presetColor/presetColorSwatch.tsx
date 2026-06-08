@@ -1,19 +1,16 @@
-"use client";
-
-import s from "@/components/admin/theme/adminTheme.module.css";
-import React from "react";
-import Modal from "@/components/admin/common/modal.tsx";
-import { PresetColor } from "@@/prisma/generated/client";
-import DeleteIcon from "@/components/icons/deleteIcon";
-import { useAlert } from "@/app/context/alertProvider";
+import s from "~/components/admin/theme/adminTheme.module.css";
+import Modal from "~/components/admin/common/modal";
+import DeleteIcon from "~/components/icons/deleteIcon";
+import { BASE_PRESET_COLOR } from "~/constants/specific";
+import PresetColorPicker from "~/components/admin/theme/dashboard/presetColor/presetColorPicker";
+import useModal from "~/components/hooks/useModal";
+import { PresetColor } from "~/lib/type";
+import { useAlert } from "~/components/admin/context/alertProvider";
+import { useAdminContext } from "~/components/admin/context/adminProvider";
 import {
-  deletePresetColor,
-  updatePresetColor,
-} from "@/app/actions/theme/admin";
-import { BASE_PRESET_COLOR } from "@/constants/specific";
-import { useAdminWorkThemeContext } from "@/app/context/adminWorkThemeProvider";
-import PresetColorPicker from "@/components/admin/theme/dashboard/presetColor/presetColorPicker";
-import useModal from "@/components/hooks/useModal.ts";
+  deletePresetColorFn,
+  updatePresetColorFn,
+} from "~/server-functions/theme";
 
 interface Props {
   presetColor: PresetColor;
@@ -24,12 +21,12 @@ export default function PresetColorSwatch({ presetColor, count }: Props) {
   const alert = useAlert();
   const { isOpen, toggle } = useModal();
   const { setThemes, presetColors, setPresetColors, workTheme, setWorkTheme } =
-    useAdminWorkThemeContext();
+    useAdminContext();
 
   const handleDelete = async () => {
     if (confirm("Sûr de vouloir supprimé ?")) {
       const { updatedPresetColors, updatedThemes, message, isError } =
-        await deletePresetColor(presetColor.id);
+        await deletePresetColorFn({ data: { id: presetColor.id } });
       if (updatedThemes && updatedPresetColors) {
         setPresetColors(updatedPresetColors);
         setThemes(updatedThemes);
@@ -47,7 +44,9 @@ export default function PresetColorSwatch({ presetColor, count }: Props) {
       ...presetColor,
       color,
     } as PresetColor;
-    const { message, isError } = await updatePresetColor(updatedPresetColor);
+    const { message, isError } = await updatePresetColorFn({
+      data: updatedPresetColor,
+    });
     if (!isError) {
       const updatedPresetColors = presetColors.map((p) => {
         if (p.id === updatedPresetColor.id) return updatedPresetColor;

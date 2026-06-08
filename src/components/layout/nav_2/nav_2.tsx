@@ -1,15 +1,9 @@
-"use client";
-
-import Link from "next/link";
-
-import { MENU_2 } from "@/constants/specific/routes.ts";
-import s from "@/components/layout/nav_2/nav_2.module.css";
-import { useTheme } from "@/app/context/themeProvider.tsx";
-import { useMetas } from "@/app/context/metaProvider.tsx";
-import { KEY_META } from "@/constants/admin.ts";
-import React from "react";
-import LogoIconT from "@/components/icons/logoIconT.tsx";
-import LogoIconM from "@/components/icons/logoIconM.tsx";
+import { MENU_2 } from "~/constants/specific/routes";
+import s from "~/components/layout/nav_2/nav_2.module.css";
+import { KEY_META } from "~/constants/admin";
+import LogoIconT from "~/components/icons/logoIconT";
+import LogoIconM from "~/components/icons/logoIconM";
+import { Link, rootRouteId, useRouteContext } from "@tanstack/react-router";
 
 interface Props {
   fixed: boolean;
@@ -17,9 +11,8 @@ interface Props {
 }
 
 export default function Nav_2({ fixed, themePage }: Props) {
-  const theme = useTheme();
-  const metas = useMetas();
-  const owner = metas.get(KEY_META.SITE_TITLE);
+  const { metas, structTheme } = useRouteContext({ from: rootRouteId });
+  const owner = metas.get(KEY_META.OWNER);
 
   return (
     <nav
@@ -27,8 +20,8 @@ export default function Nav_2({ fixed, themePage }: Props) {
       style={{
         backgroundColor: fixed
           ? themePage === "home"
-            ? theme.home.menu2.background + "aa"
-            : theme[themePage].menu2.background
+            ? structTheme.home.menu2.background + "aa"
+            : structTheme[themePage].menu2.background
           : undefined,
       }}
     >
@@ -37,7 +30,7 @@ export default function Nav_2({ fixed, themePage }: Props) {
           if (menuItem.TAG === "Home")
             return (
               <li key={menuItem.TAG}>
-                <Link href={menuItem.ROUTE} key={menuItem.TAG}>
+                <Link to={menuItem.ROUTE} key={menuItem.TAG}>
                   {owner?.startsWith("T") && (
                     <LogoIconT width={30} height={30} />
                   )}
@@ -49,28 +42,28 @@ export default function Nav_2({ fixed, themePage }: Props) {
             );
           return (
             <li key={menuItem.TAG}>
-              <Link href={menuItem.ROUTE} key={menuItem.TAG}>
+              <Link to={menuItem.ROUTE} key={menuItem.TAG}>
                 {menuItem.TAG}
               </Link>
             </li>
           );
         })}
       </ul>
-      <style jsx global>{`
+      <style>{`
         .nav2 a {
-          color: ${theme[themePage].menu2.link};
+          color: ${structTheme[themePage].menu2.link};
         }
 
         .nav2 a:hover {
-          color: ${theme[themePage].menu2.linkHover};
+          color: ${structTheme[themePage].menu2.linkHover};
         }
 
         .homeIcon {
-          fill: ${theme[themePage].menu1.link};
+          fill: ${structTheme[themePage].menu1.link};
         }
 
         .homeIcon:hover {
-          fill: ${theme[themePage].menu1.linkHover};
+          fill: ${structTheme[themePage].menu1.linkHover};
         }
       `}</style>
     </nav>

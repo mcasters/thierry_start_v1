@@ -1,36 +1,29 @@
-"use client";
-
-import s from "@/components/layout/layout.module.css";
-import { ROUTES } from "@/constants/specific/routes";
-import { useSession } from "@/app/context/sessionProvider";
-import Link from "next/link";
-import { useTheme } from "@/app/context/themeProvider";
-import { useMetas } from "@/app/context/metaProvider";
-import { KEY_META } from "@/constants/admin";
-import React from "react";
+import s from "~/components/layout/layout.module.css";
+import { ROUTES } from "~/constants/specific/routes";
+import { KEY_META } from "~/constants/admin";
+import { Link, rootRouteId, useRouteContext } from "@tanstack/react-router";
 
 type Props = {
   themePage: "work" | "home" | "other";
 };
 
 export default function Footer({ themePage }: Props) {
-  const session = useSession();
-  const metas = useMetas();
-  const theme = useTheme();
-
+  const { metas, structTheme, session } = useRouteContext({
+    from: rootRouteId,
+  });
   return (
     <footer
       className={s.footer}
       style={{
-        color: theme[themePage].footer.text,
-        backgroundColor: theme[themePage].footer.background,
+        color: structTheme[themePage].footer.text,
+        backgroundColor: structTheme[themePage].footer.background,
       }}
     >
       <p>{metas.get(KEY_META.FOOTER)}</p>
-      {!session?.user && (
+      {!session?.email && (
         <Link
-          href={ROUTES.LOGIN}
-          style={{ color: theme[themePage].footer.link }}
+          to={ROUTES.LOGIN}
+          style={{ color: structTheme[themePage].footer.link }}
         >
           Admin
         </Link>

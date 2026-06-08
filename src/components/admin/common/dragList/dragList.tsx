@@ -1,9 +1,9 @@
 import { Fragment, useMemo, useState } from "react";
 import s from "./dragList.module.css";
-import useOnClickOutside from "@/components/hooks/useOnClickOutside.ts";
-import { DragListElement } from "@/lib/type.ts";
-import { sortDragList } from "@/lib/utils/commonUtils.ts";
-import { sortList } from "@/lib/utils/themeUtils.ts";
+import useOnClickOutside from "~/components/hooks/useOnClickOutside";
+import { DragListElement } from "~/lib/type";
+import { sortDragList } from "~/utils/commonUtils";
+import { sortList } from "~/utils/themeUtils";
 
 interface Props {
   list: DragListElement[];

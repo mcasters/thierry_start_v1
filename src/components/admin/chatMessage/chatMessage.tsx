@@ -1,33 +1,41 @@
-import React from "react";
 import s from "./chatMessage.module.css";
-import { useTheme } from "@/app/context/themeProvider";
-import { Message } from "@/lib/type";
-import MoreIcon from "@/components/icons/moreIcon";
-import ChatMessageMenu from "@/components/admin/chatMessage/chatMessageMenu.tsx";
+import { Message } from "~/lib/type";
+import MoreIcon from "~/components/icons/moreIcon";
+import useOnClickOutside from "~/components/hooks/useOnClickOutside";
+import { deleteMessageFn } from "~/server-functions/message";
+import {
+  rootRouteId,
+  useRouteContext,
+  useRouter,
+} from "@tanstack/react-router";
 
 type Props = {
   message: Message;
-  editMessage?: {
+  editableMessage?: {
     onUpdate: () => void;
-    onDelete: () => Promise<void>;
-    onOpenMenu: () => void;
-    onCloseMenu: () => void;
+    openMenu: (arg0: boolean) => void;
     isOpen: boolean;
   };
 };
 
-export default function ChatMessage({ message, editMessage }: Props) {
-  const theme = useTheme();
+export default function ChatMessage({ message, editableMessage }: Props) {
+  const { structTheme } = useRouteContext({ from: rootRouteId });
+  const router = useRouter();
+  const { ref } = useOnClickOutside(
+    editableMessage ? () => editableMessage.openMenu(false) : undefined,
+  );
 
   return (
-    <div className={editMessage ? s.textLeft : s.textRight}>
+    <div className={editableMessage ? s.textLeft : s.textRight}>
       <p
         className={s.authorName}
         style={{
-          color: editMessage ? theme.other.main.text : theme.other.main.link,
+          color: editableMessage
+            ? structTheme.other.main.text
+            : structTheme.other.main.link,
         }}
       >
-        {`${message.author.email} - ${new Date(message.date).toLocaleDateString("fr-FR")}${
+        {`${message.author?.email} - ${new Date(message.date).toLocaleDateString("fr-FR")}${
           message.dateUpdated
             ? " -" +
               ` Mis à jour le ${new Date(message.dateUpdated).toLocaleDateString("fr-FR")}`
@@ -37,22 +45,38 @@ export default function ChatMessage({ message, editMessage }: Props) {
       <div
         className={s.message}
         style={{
-          backgroundColor: editMessage
-            ? theme.other.main.text
-            : theme.other.main.link,
+          backgroundColor: editableMessage
+            ? structTheme.other.main.text
+            : structTheme.other.main.link,
         }}
       >
-        {editMessage && (
+        {editableMessage && (
           <>
-            <button className={s.moreButton} onClick={editMessage?.onOpenMenu}>
+            <button
+              className={s.moreButton}
+              onClick={() => editableMessage.openMenu(true)}
+            >
               <MoreIcon />
             </button>
-            {editMessage?.isOpen && (
-              <ChatMessageMenu
-                onUpdate={editMessage?.onUpdate}
-                onDelete={async () => editMessage?.onDelete()}
-                onCloseMenu={editMessage?.onCloseMenu}
-              />
+            {editableMessage.isOpen && (
+              <div ref={ref} className={s.menu}>
+                <button
+                  onClick={editableMessage.onUpdate}
+                  className={s.menuItemButton}
+                >
+                  Modifier
+                </button>
+                <button
+                  onClick={async () => {
+                    await deleteMessageFn({ data: { id: message.id } });
+                    router.invalidate();
+                    editableMessage.openMenu(false);
+                  }}
+                  className={s.menuItemButton}
+                >
+                  Supprimer
+                </button>
+              </div>
             )}
           </>
         )}

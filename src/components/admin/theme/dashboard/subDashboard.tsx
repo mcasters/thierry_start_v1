@@ -1,20 +1,18 @@
-"use client";
-
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 import s from "../adminTheme.module.css";
 import {
   THEME_GEN_TARGET_LABEL,
   THEME_LABEL,
   THEME_PAGE_LABEL,
   THEME_TARGET_LABEL,
-} from "@/constants/admin";
-import ColorSwatch from "@/components/admin/theme/dashboard/colorSwatch";
+} from "~/constants/admin";
+import ColorSwatch from "~/components/admin/theme/dashboard/colorSwatch";
 import {
   StructTheme,
   ThemeGenTarget,
   ThemePage,
   ThemeTarget,
-} from "@/lib/type";
+} from "~/lib/type";
 
 interface Props {
   structuredTheme: StructTheme;

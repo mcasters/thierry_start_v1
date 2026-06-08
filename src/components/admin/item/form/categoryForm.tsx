@@ -1,44 +1,38 @@
-"use client";
-
 import React, { useState } from "react";
-
-import s from "@/components/admin/admin.module.css";
-import SubmitButton from "@/components/admin/common/button/submitButton.tsx";
-import CancelButton from "@/components/admin/common/button/cancelButton.tsx";
-import { AdminCategory, Category, Image } from "@/lib/type.ts";
-import { useAlert } from "@/app/context/alertProvider.tsx";
-import SelectImageList from "@/components/admin/common/image/selectImageList.tsx";
-
-import {
-  createCategory,
-  updateCategory,
-} from "@/app/actions/item-post/categories/admin.ts";
-import { MESSAGE } from "@/constants/admin.ts";
+import { AdminCategory } from "~/lib/type";
+import SelectImageList from "~/components/admin/common/image/selectImageList";
+import { MESSAGE } from "~/constants/admin";
+import { useAlert } from "~/components/admin/context/alertProvider";
+import { getCreateCategoryFn, getUpdateCategoryFn } from "~/server-functions";
+import { useRouter } from "@tanstack/react-router";
+import FormButtons from "~/components/admin/common/button/FormButtons";
 
 interface Props {
-  category: AdminCategory;
+  adminCategory: AdminCategory;
   onClose: () => void;
 }
-export default function CategoryForm({ category, onClose }: Props) {
-  const isUpdate = category.id !== 0;
-  const [workCategory, setWorkCategory] = useState<Category>(category);
-  const [image, setImage] = useState<Image>(category.content.image);
+export default function CategoryForm({ adminCategory, onClose }: Props) {
+  const isUpdate = adminCategory.id !== 0;
   const alert = useAlert();
+  const router = useRouter();
+  const [workCategory, setWorkCategory] =
+    useState<AdminCategory>(adminCategory);
+  const [filename, setFilename] = useState<string>(adminCategory.imageFilename);
+  const type = adminCategory.workType;
+  const fn = isUpdate ? getUpdateCategoryFn(type) : getCreateCategoryFn(type);
 
-  const submit = async (formData: FormData) => {
-    const action = isUpdate ? updateCategory : createCategory;
-    const { message, isError } = await action(formData);
+  const action = async (formData: FormData) => {
+    const { message, isError } = await fn({ data: formData });
     if (!isError) onClose();
     alert(message, isError);
+    router.invalidate();
   };
 
   return (
-    <form action={submit}>
-      <input type="hidden" name="id" value={category.id} />
-      <input type="hidden" name="type" value={category.workType} />
-      <input type="hidden" name="filename" value={image.filename} />
-      <input type="hidden" name="width" value={image.width} />
-      <input type="hidden" name="height" value={image.height} />
+    <form action={action}>
+      <input type="hidden" name="id" value={adminCategory.id} />
+      <input type="hidden" name="type" value={adminCategory.workType} />
+      <input type="hidden" name="filename" value={filename} />
       <label>
         Nom de la catégorie
         <input
@@ -61,12 +55,9 @@ export default function CategoryForm({ category, onClose }: Props) {
         <input
           name="title"
           type="text"
-          value={workCategory.content.title}
+          value={workCategory.title}
           onChange={(e) =>
-            setWorkCategory({
-              ...workCategory,
-              content: { ...workCategory.content, title: e.target.value },
-            })
+            setWorkCategory({ ...workCategory, title: e.target.value })
           }
         />
       </label>
@@ -75,25 +66,19 @@ export default function CategoryForm({ category, onClose }: Props) {
         <textarea
           name="text"
           rows={5}
-          value={workCategory.content.text}
+          value={workCategory.text}
           onChange={(e) =>
-            setWorkCategory({
-              ...workCategory,
-              content: { ...workCategory.content, text: e.target.value },
-            })
+            setWorkCategory({ ...workCategory, text: e.target.value })
           }
         />
       </label>
       <SelectImageList
-        itemsImages={category.images}
-        selectedImage={workCategory.content.image}
-        onChange={(image) => setImage(image)}
-        type={category.workType}
+        filenames={adminCategory.filenames}
+        categoryFilename={workCategory.imageFilename}
+        onChange={(filename) => setFilename(filename)}
+        type={adminCategory.workType}
       />
-      <div className={s.buttonSection}>
-        <SubmitButton />
-        <CancelButton onCancel={onClose} />
-      </div>
+      <FormButtons onCancel={onClose} />
     </form>
   );
 }

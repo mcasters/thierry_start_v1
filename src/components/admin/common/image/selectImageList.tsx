@@ -1,30 +1,27 @@
-"use client";
-
-import React, { useState } from "react";
-import s from "@/components/admin/admin.module.css";
-import Image from "next/image";
-import { Image as IImage, Type } from "@/lib/type";
-import { getEmptyImage } from "@/lib/utils/commonUtils";
+import { useState } from "react";
+import s from "~/components/admin/admin.module.css";
+import { TYPE } from "~/db/schema";
 
 type Props = {
-  itemsImages: IImage[];
-  selectedImage: IImage;
-  onChange: (image: IImage) => void;
-  type: Type.PAINTING | Type.SCULPTURE | Type.DRAWING;
+  filenames: string[];
+  categoryFilename: string;
+  onChange: (filename: string) => void;
+  type: TYPE.PAINTING | TYPE.SCULPTURE | TYPE.DRAWING;
 };
 
 export default function SelectImageList({
-  itemsImages,
-  selectedImage,
+  filenames,
+  categoryFilename,
   onChange,
   type,
 }: Props) {
-  const [filename, setFilename] = useState<string>(selectedImage.filename);
-  const isEmpty = itemsImages.length === 1 && itemsImages[0].filename === "";
+  const [selectedFilename, setSelectedFilename] =
+    useState<string>(categoryFilename);
+  const isEmpty = filenames.length === 1 && filenames[0] === "";
 
-  const onSelectImage = (image: IImage) => {
-    setFilename(image.filename);
-    onChange(image);
+  const onSelectFilename = (filename: string) => {
+    setSelectedFilename(filename);
+    onChange(filename);
   };
 
   return (
@@ -32,24 +29,27 @@ export default function SelectImageList({
       <span className="label">Image de la catégorie (facultative)</span>
       <div className={s.selectList}>
         <div
-          onClick={() => onSelectImage(getEmptyImage())}
-          className={`${s.option} ${filename === "" ? "selected" : undefined}`}
+          onClick={() => onSelectFilename("")}
+          className={
+            selectedFilename === "" ? `${s.selectedOption} selected` : s.option
+          }
         >
           -- Aucune image --
         </div>
         {!isEmpty &&
-          itemsImages.map((image: IImage) => {
-            const isCategoryImage = image.filename === filename;
+          filenames.map((filename: string) => {
             return (
               <div
-                key={image.filename}
+                key={filename}
                 className={
-                  isCategoryImage ? `${s.selectedOption} selected` : s.option
+                  selectedFilename === filename
+                    ? `${s.selectedOption} selected`
+                    : s.option
                 }
-                onClick={() => onSelectImage(image)}
+                onClick={() => onSelectFilename(filename)}
               >
-                <Image
-                  src={`/images/${type}/sm/${image.filename}`}
+                <img
+                  src={`/images/${type}/sm/${filename}`}
                   width={120}
                   height={120}
                   alt="Image de l'item"
@@ -57,7 +57,6 @@ export default function SelectImageList({
                     objectFit: "cover",
                     verticalAlign: "top",
                   }}
-                  unoptimized
                 />
               </div>
             );

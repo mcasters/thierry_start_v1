@@ -1,16 +1,13 @@
-"use client";
-
-import { PresetColor } from "@@/prisma/generated/client";
-import { useAdminWorkThemeContext } from "@/app/context/adminWorkThemeProvider";
-import PresetColorSwatch from "@/components/admin/theme/dashboard/presetColor/presetColorSwatch";
-import DragList from "@/components/admin/common/dragList/dragList.tsx";
-import s from "@/components/admin/theme/adminTheme.module.css";
-import { updatePresetColorsOrder } from "@/app/actions/theme/admin.ts";
-import { useAlert } from "@/app/context/alertProvider.tsx";
-import { DragListElement } from "@/lib/type.ts";
+import PresetColorSwatch from "~/components/admin/theme/dashboard/presetColor/presetColorSwatch";
+import DragList from "~/components/admin/common/dragList/dragList";
+import s from "~/components/admin/theme/adminTheme.module.css";
+import { DragListElement, PresetColor } from "~/lib/type";
+import { useAdminContext } from "~/components/admin/context/adminProvider";
+import { useAlert } from "~/components/admin/context/alertProvider";
+import { updatePresetColorsOrderFn } from "~/server-functions/theme";
 
 export default function PresetColorDashboard() {
-  const { themes, presetColors, setPresetColors } = useAdminWorkThemeContext();
+  const { themes, presetColors, setPresetColors } = useAdminContext();
   const alert = useAlert();
 
   const presetColorCountUse = (presetColor: PresetColor): number => {
@@ -27,9 +24,9 @@ export default function PresetColorDashboard() {
 
   const handleChangeOrder = async (map: Map<number, number>) => {
     const { message, isError, updatedPresetColors } =
-      await updatePresetColorsOrder(map);
-    if (isError) alert(message, isError);
-    else if (updatedPresetColors) setPresetColors(updatedPresetColors);
+      await updatePresetColorsOrderFn({ data: map });
+    if (!isError && updatedPresetColors) setPresetColors(updatedPresetColors);
+    alert(message, isError);
   };
 
   return (

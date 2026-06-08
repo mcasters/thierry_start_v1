@@ -3,6 +3,7 @@
   padding: 1em;
   font-family: var(--font-family-serif-caps), serif;
   font-weight: 700;
+  font-size: unset;
   letter-spacing: 2px;
 }
 
@@ -28,11 +29,6 @@
   width: 150px;
   height: 150px;
   overflow: hidden;
-}
-
-.image {
-  width: 150px;
-  height: 150px;
 }
 
 .categoryLink p {
@@ -70,8 +66,6 @@
   }
 
   .image {
-    width: 250px;
-    height: 250px;
     transition: transform 0.4s ease-out;
   }
 

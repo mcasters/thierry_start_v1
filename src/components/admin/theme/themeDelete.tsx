@@ -1,18 +1,17 @@
-"use client";
-
-import React from "react";
-import { useAdminWorkThemeContext } from "@/app/context/adminWorkThemeProvider";
-import { useAlert } from "@/app/context/alertProvider";
-import { THEME } from "@/constants/admin";
-import { Theme } from "@@/prisma/generated/client";
-import { deleteTheme } from "@/app/actions/theme/admin";
+import { THEME } from "~/constants/admin";
+import { Theme } from "~/lib/type";
+import { deleteThemeFn } from "~/server-functions/theme";
+import { useAdminContext } from "~/components/admin/context/adminProvider";
+import { useAlert } from "~/components/admin/context/alertProvider";
 
 export default function ThemeDelete() {
+  const { workTheme, setWorkTheme, setThemes } = useAdminContext();
   const alert = useAlert();
-  const { workTheme, setWorkTheme, setThemes } = useAdminWorkThemeContext();
 
   const handleDelete = async () => {
-    const { message, isError, updatedThemes } = await deleteTheme(workTheme.id);
+    const { message, isError, updatedThemes } = await deleteThemeFn({
+      data: { id: workTheme.id },
+    });
     if (updatedThemes) {
       setThemes(updatedThemes);
       setWorkTheme(updatedThemes.find((t) => t.isActive) as Theme);
@@ -22,7 +21,7 @@ export default function ThemeDelete() {
 
   return (
     <button
-      disabled={workTheme.name === THEME.BASE_THEME}
+      disabled={workTheme.name === THEME.BASE_THEME_NAME}
       onClick={handleDelete}
       className="adminButton"
     >

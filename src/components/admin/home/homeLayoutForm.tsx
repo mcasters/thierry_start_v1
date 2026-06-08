@@ -1,28 +1,31 @@
-"use client";
+import React, { useState } from "react";
+import s from "~/components/admin/admin.module.css";
+import { getHomeLayout } from "~/utils/commonUtils";
+import { KEY_META } from "~/constants/admin";
+import { updateMetaFn } from "~/server-functions/meta";
+import { useAlert } from "~/components/admin/context/alertProvider";
+import { rootRouteId, useRouteContext } from "@tanstack/react-router";
 
-import React, { useActionState, useState } from "react";
-import s from "@/components/admin/admin.module.css";
-import Image from "next/image";
-import { useMetas } from "@/app/context/metaProvider.tsx";
-import { getHomeLayout } from "@/lib/utils/commonUtils.ts";
-import { updateMeta } from "@/app/actions/meta";
-import { KEY_META } from "@/constants/admin.ts";
-import useActionResult from "@/components/hooks/useActionResult.ts";
-
-export default function HomeLayoutForm() {
-  const metas = useMetas();
+export function HomeLayoutForm() {
+  const { metas } = useRouteContext({ from: rootRouteId });
+  const alert = useAlert();
   const [value, setValue] = useState<string>(getHomeLayout(metas).toString());
-  const [state, action] = useActionState(updateMeta, null);
-  useActionResult(state);
+
+  const handleChange = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const value = e.currentTarget.value;
+    setValue(value);
+    const res = await updateMetaFn({
+      data: { key: KEY_META.HOME_LAYOUT, text: value },
+    });
+    alert(res.message, res.isError);
+  };
 
   return (
-    <form action={action} className={s.layoutForm}>
-      <input type="hidden" name="key" value={KEY_META.HOME_LAYOUT} />
-      <input type="hidden" name="text" value={value} />
-
+    <form className={s.layoutForm}>
       <p className={s.layoutLabel}>
         <button
-          onClick={(e) => setValue(e.currentTarget.value)}
+          onClick={handleChange}
           className={
             value === "1"
               ? `${s.buttonLayoutSelected} ${s.buttonLayout}`
@@ -30,12 +33,11 @@ export default function HomeLayoutForm() {
           }
           value="1"
         >
-          <Image
+          <img
             src="/assets/home-nav-layout.png"
             alt=""
             width={200}
             height={130}
-            unoptimized
           />
         </button>
         <span>
@@ -46,7 +48,7 @@ export default function HomeLayoutForm() {
       </p>
       <p className={s.layoutLabel}>
         <button
-          onClick={(e) => setValue(e.currentTarget.value)}
+          onClick={handleChange}
           className={
             value === "0"
               ? `${s.buttonLayoutSelected} ${s.buttonLayout}`
@@ -54,12 +56,11 @@ export default function HomeLayoutForm() {
           }
           value="0"
         >
-          <Image
+          <img
             src="/assets/home-plain-layout.png"
             alt=""
             width={200}
             height={130}
-            unoptimized
           />
         </button>
         <span>

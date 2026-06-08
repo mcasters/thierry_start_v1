@@ -1,11 +1,9 @@
-"use client";
-
-import Modal from "@/components/admin/common/modal.tsx";
-import React from "react";
-import useModal from "@/components/hooks/useModal.ts";
+import Modal from "~/components/admin/common/modal";
+import useModal from "~/components/hooks/useModal";
+import { ReactNode } from "react";
 
 interface Props {
-  renderForm: (arg0: () => void) => React.ReactNode;
+  renderForm: (arg0: () => void) => ReactNode;
   modalWidth: number;
 }
 export default function AddButton({ renderForm, modalWidth }: Props) {

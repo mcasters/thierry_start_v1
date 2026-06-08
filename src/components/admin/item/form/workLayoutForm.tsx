@@ -1,48 +1,44 @@
-"use client";
-
-import React, { useActionState, useState } from "react";
-import s from "@/components/admin/admin.module.css";
-import { Type } from "@/lib/type.ts";
-import Image from "next/image";
-import { getWorkLayout } from "@/lib/utils/commonUtils.ts";
-import { useMetas } from "@/app/context/metaProvider.tsx";
-import { updateMeta } from "@/app/actions/meta";
-import useActionResult from "@/components/hooks/useActionResult.ts";
+import React, { useState } from "react";
+import s from "~/components/admin/admin.module.css";
+import { getWorkLayout } from "~/utils/commonUtils";
+import { TYPE } from "~/db/schema";
+import { rootRouteId, useRouteContext } from "@tanstack/react-router";
+import { updateMetaFn } from "~/server-functions/meta";
+import { useAlert } from "~/components/admin/context/alertProvider";
 
 type Props = {
-  type: Type.PAINTING | Type.SCULPTURE | Type.DRAWING;
+  type: TYPE.PAINTING | TYPE.SCULPTURE | TYPE.DRAWING;
 };
 
-export default function ItemLayoutForm({ type }: Props) {
-  const metas = useMetas();
+export default function WorkLayoutForm({ type }: Props) {
+  const { metas } = useRouteContext({ from: rootRouteId });
+  const alert = useAlert();
   const [itemLayout, itemDarkBackground] = getWorkLayout(metas, type);
   const [layout, setLayout] = useState<string>(itemLayout.toString());
   const [darkBackground, setDarkBackground] = useState<boolean>(
     itemDarkBackground === 1,
   );
-  const [state, action] = useActionState(updateMeta, null);
-  useActionResult(state);
+
+  const action = async () => {
+    const res = await updateMetaFn({
+      data: {
+        key:
+          type === TYPE.PAINTING
+            ? "paintingLayout"
+            : type === TYPE.SCULPTURE
+              ? "sculptureLayout"
+              : "drawingLayout",
+        text: "",
+        layout: layout,
+        darkBackground: darkBackground ? "1" : "0",
+      },
+    });
+    alert(res.message, res.isError);
+  };
 
   return (
     <form action={action} className={s.layoutForm}>
-      <input
-        type="hidden"
-        name="key"
-        value={
-          type === Type.PAINTING
-            ? "paintingLayout"
-            : type === Type.SCULPTURE
-              ? "sculptureLayout"
-              : "drawingLayout"
-        }
-      />
-      <input type="hidden" name="layout" value={layout} />
-      <input
-        type="hidden"
-        name="darkBackground"
-        value={darkBackground ? "1" : "0"}
-      />
-      {(type === Type.PAINTING || type === Type.DRAWING) && (
+      {(type === TYPE.PAINTING || type === TYPE.DRAWING) && (
         <>
           <p className={s.layoutLabel}>
             <button
@@ -53,12 +49,11 @@ export default function ItemLayoutForm({ type }: Props) {
                   : s.buttonLayout
               }
             >
-              <Image
+              <img
                 src="/assets/mono-layout.png"
                 alt=""
                 width={200}
                 height={130}
-                unoptimized
               />
             </button>
             <span>
@@ -76,12 +71,11 @@ export default function ItemLayoutForm({ type }: Props) {
                   : s.buttonLayout
               }
             >
-              <Image
+              <img
                 src="/assets/double-layout.png"
                 alt=""
                 width={200}
                 height={130}
-                unoptimized
               />
             </button>
             <span>
@@ -93,7 +87,7 @@ export default function ItemLayoutForm({ type }: Props) {
           </p>
         </>
       )}
-      {type === Type.SCULPTURE && (
+      {type === TYPE.SCULPTURE && (
         <p className={s.layoutLabel}>
           <button
             onClick={() => setLayout("3")}
@@ -103,12 +97,11 @@ export default function ItemLayoutForm({ type }: Props) {
                 : s.buttonLayout
             }
           >
-            <Image
+            <img
               src="/assets/sculpture-layout.png"
               alt=""
               width={200}
               height={130}
-              unoptimized
             />
           </button>
           <span>
@@ -128,12 +121,11 @@ export default function ItemLayoutForm({ type }: Props) {
               : s.buttonLayout
           }
         >
-          <Image
+          <img
             src="/assets/gallery-layout.png"
             alt=""
             width={200}
             height={130}
-            unoptimized
           />
         </button>
         <span>

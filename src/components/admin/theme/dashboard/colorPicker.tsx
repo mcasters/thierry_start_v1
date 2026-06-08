@@ -1,11 +1,9 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
-import s from "@/components/admin/theme/adminTheme.module.css";
+import { useEffect, useState } from "react";
+import s from "~/components/admin/theme/adminTheme.module.css";
 import { HexColorInput, HexColorPicker } from "react-colorful";
-import { useAdminWorkThemeContext } from "@/app/context/adminWorkThemeProvider";
 
-import { colorNameToHex } from "@/lib/utils/themeUtils";
+import { colorNameToHex } from "~/utils/themeUtils";
+import { useAdminContext } from "~/components/admin/context/adminProvider";
 
 interface Props {
   color: string; // Hex or presetColor name
@@ -22,7 +20,7 @@ export default function ColorPicker({
   onClose,
   onCancel,
 }: Props) {
-  const { workTheme, presetColors } = useAdminWorkThemeContext();
+  const { workTheme, presetColors } = useAdminContext();
   const isPresetColor = !color.startsWith("#");
   const hexColor = colorNameToHex(color, presetColors);
   const [name, setName] = useState<string>("");

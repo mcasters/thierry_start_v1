@@ -1,23 +1,24 @@
-"use client";
-
-import React, { useState } from "react";
-import { useAdminWorkThemeContext } from "@/app/context/adminWorkThemeProvider";
-import { useAlert } from "@/app/context/alertProvider";
-import { createTheme } from "@/app/actions/theme/admin";
+import { useState } from "react";
+import { createThemeFn } from "~/server-functions/theme";
+import { useAdminContext } from "~/components/admin/context/adminProvider";
+import { useAlert } from "~/components/admin/context/alertProvider";
 
 export default function ThemeAdd() {
-  const { workTheme, setWorkTheme, setIsSaved, themes, setThemes } =
-    useAdminWorkThemeContext();
-  const [themeName, setThemeName] = useState<string>("");
+  const { workTheme, setWorkTheme, setThemes, themes, setIsSaved } =
+    useAdminContext();
   const alert = useAlert();
+  const [themeName, setThemeName] = useState<string>("");
 
   const handleAdd = async () => {
     if (themeName === "") alert("Le nom du nouveau thème est manquant", true);
     else {
-      const { theme, message, isError } = await createTheme(
-        workTheme,
-        themeName,
-      );
+      const { theme, message, isError } = await createThemeFn({
+        data: {
+          ...workTheme,
+          name: themeName,
+          isActive: false,
+        },
+      });
       if (theme) {
         setThemes([...themes, theme]);
         setWorkTheme(theme);

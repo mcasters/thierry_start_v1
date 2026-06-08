@@ -1,18 +1,16 @@
-"use client";
-
-import React, { useActionState, useState } from "react";
-import s from "@/components/admin/admin.module.css";
-import { Image, KeyContent } from "@/lib/type";
-import ImageInput from "@/components/admin/common/image/imageInput.tsx";
-import useActionResult from "@/components/hooks/useActionResult.ts";
-import { updateImageContent } from "@/app/actions/contents/admin.ts";
-import SubmitButton from "@/components/admin/common/button/submitButton.tsx";
-import CancelButton from "@/components/admin/common/button/cancelButton.tsx";
+import React, { useState } from "react";
+import { Image } from "~/lib/type";
+import ImageInput from "~/components/admin/common/image/imageInput";
+import { LABEL } from "~/db/schema";
+import { updateImageContentFn } from "~/server-functions/content";
+import { useRouter } from "@tanstack/react-router";
+import { useAlert } from "~/components/admin/context/alertProvider";
+import FormButtons from "~/components/admin/common/button/FormButtons";
 
 type Props = {
   images: Image[];
   isMultiple: boolean;
-  label: KeyContent;
+  label: LABEL;
   acceptSmallImage: boolean;
   title?: string;
   isMain?: boolean;
@@ -26,14 +24,22 @@ export default function ImagesForm({
   title,
   isMain = false,
 }: Props) {
+  const router = useRouter();
+  const alert = useAlert();
   const [resetInput, setResetInput] = useState<number>(0);
   const [changed, setChanged] = useState<boolean>(false);
-  const [state, action] = useActionState(updateImageContent, null);
+
   const reset = (): void => {
     setResetInput(resetInput + 1);
     setChanged(false);
   };
-  useActionResult(state, reset);
+
+  const action = async (formData: FormData) => {
+    const res = await updateImageContentFn({ data: formData });
+    alert(res.message, res.isError);
+    router.invalidate();
+    reset();
+  };
 
   return (
     <form action={action}>
@@ -49,10 +55,7 @@ export default function ImagesForm({
         onChange={() => setChanged(true)}
         title={title}
       />
-      <div className={s.buttonSection}>
-        <SubmitButton disabled={!changed} />
-        <CancelButton disabled={!changed} onCancel={reset} />
-      </div>
+      <FormButtons onCancel={reset} disabled={!changed} />
     </form>
   );
 }

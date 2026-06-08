@@ -1,16 +1,13 @@
-"use client";
-
-import { Theme } from "@@/prisma/generated/client";
-import React, { useRef } from "react";
-import s from "@/components/admin/theme/adminTheme.module.css";
-import { useAdminWorkThemeContext } from "@/app/context/adminWorkThemeProvider";
-import { OnlyString } from "@/lib/type";
-import ColorPicker from "@/components/admin/theme/dashboard/colorPicker";
-import Modal from "@/components/admin/common/modal.tsx";
-import { createPresetColor } from "@/app/actions/theme/admin";
-import { useAlert } from "@/app/context/alertProvider";
-import { colorNameToHex } from "@/lib/utils/themeUtils";
-import useModal from "@/components/hooks/useModal.ts";
+import { useRef } from "react";
+import s from "~/components/admin/theme/adminTheme.module.css";
+import { OnlyString, Theme } from "~/lib/type";
+import ColorPicker from "~/components/admin/theme/dashboard/colorPicker";
+import Modal from "~/components/admin/common/modal";
+import { colorNameToHex } from "~/utils/themeUtils";
+import useModal from "~/components/hooks/useModal";
+import { useAlert } from "~/components/admin/context/alertProvider";
+import { useAdminContext } from "~/components/admin/context/adminProvider";
+import { createPresetColorFn } from "~/server-functions/theme";
 
 interface Props {
   dbKey: string;
@@ -25,7 +22,7 @@ export default function ColorSwatch({ dbKey, fullLabel }: Props) {
     setIsSaved,
     presetColors,
     setPresetColors,
-  } = useAdminWorkThemeContext();
+  } = useAdminContext();
   const alert = useAlert();
   const { isOpen, toggle } = useModal();
   const color: string = workTheme[dbKey as keyof OnlyString<Theme>];
@@ -44,11 +41,13 @@ export default function ColorSwatch({ dbKey, fullLabel }: Props) {
     nameColor: string,
     hexColor: string,
   ) => {
-    const res = await createPresetColor(
-      nameColor,
-      hexColor,
-      presetColors.length,
-    );
+    const res = await createPresetColorFn({
+      data: {
+        name: nameColor,
+        color: hexColor,
+        displayOrder: presetColors.length,
+      },
+    });
     if (res.newPresetColor) {
       setPresetColors([...presetColors, res.newPresetColor]);
       setWorkTheme({ ...workTheme, [dbKey]: nameColor } as Theme);
