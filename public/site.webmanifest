@@ -1,0 +1,15 @@
+{
+  "name": "Œuvres de Thierry Casters",
+  "short_name": "Thierry Casters",
+  "start_url": "/",
+  "display": "browser",
+  "icons": [
+    {
+      "src": "/logo-100.png",
+      "sizes": "100x100",
+      "type": "image/png"
+    }
+  ],
+  "background_color": "#eee",
+  "theme_color": "#24445C"
+}
