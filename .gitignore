@@ -1,47 +1,24 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+node_modules
+package-lock.json
+yarn.lock
 
-# misc
 .DS_Store
-*.pem
-
-# Diagnostic reports (https://nodejs.org/api/report.html)
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-# typescript
-next-env.d.ts
-
-# Dependency directories
-node_modules/
-
-# Optional npm cache directory
-.npm
-
-# Output of 'npm pack'
-*.tgz
-
-# dotenv environment variables file
-.env
-.env.test
-.env.local
-.env.production
-
-# parcel-bundler cache (https://parceljs.org/)
 .cache
-
-# next.js build output
-.next/
-
-# Divers
+.env
+.vercel
+.output
+.nitro
+/build/
+/api/
+/server/build
+/public/build# Sentry Config File
+.env.sentry-build-plugin
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+.tanstack
 notes/
 .idea
-package-lock.json
-/public/images
 .editorconfig
-
-# database
-/prisma/generated
+drizzle/
