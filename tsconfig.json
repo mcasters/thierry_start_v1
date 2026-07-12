@@ -1,38 +1,21 @@
 {
+  "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts"],
   "compilerOptions": {
-    "target": "ES2023",
-    "lib": ["ES2023", "dom", "dom.iterable", "esnext"],
-    "sourceMap": true,
-    "outDir": "dist",
-    "allowJs": true,
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["DOM", "DOM.Iterable", "ES2024"],
+    "isolatedModules": true,
     "resolveJsonModule": true,
-    "incremental": true,
+    "skipLibCheck": true,
+    "target": "ES2024",
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "@@/*": ["./*"]
+      "~/*": ["./src/*"]
     },
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
-  },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-  ],
-  "exclude": ["node_modules"]
+    "noEmit": true
+  }
 }
