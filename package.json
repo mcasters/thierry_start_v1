@@ -1,9 +1,9 @@
 {
   "name": "thierry_start",
   "description": "Thierry Casters portfolio",
-  "repository": "thierry_v2",
+  "repository": "thierry_start_v1",
   "homepage": "https://thierrycasters.fr",
-  "version": "3.0.0",
+  "version": "1.0.0",
   "private": true,
   "sideEffects": false,
   "author": "Marion Casters",
